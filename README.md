@@ -1,4 +1,4 @@
-# Golang Workspace Template
+# SSO Implementaion In GOLang
 
 Run this to alter GOPATH
 
