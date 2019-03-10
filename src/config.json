@@ -1,0 +1,9 @@
+{
+    "ServerAddress": "localhost",
+    "ServerPort": "8080",
+    "DbAddress": "localhost",
+    "DbPort":   "5432",
+    "DbUser":   "sso",
+    "DbName":   "sso",
+    "DbPassword":   "password"
+}

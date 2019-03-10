@@ -1,4 +1,4 @@
-package main
+package misc
 
 import (
 	"encoding/json"
@@ -8,13 +8,18 @@ import (
 
 //Configuration holds the struct to the config
 type Configuration struct {
-	Address string
-	Port    string
+	ServerAddress string
+	ServerPort    string
+	DbAddress     string
+	DbPort        string
+	DbUser        string
+	DbName        string
+	DbPassword    string
 }
 
 var outputLogger *log.Logger
 
-//Config holds the values used to start the server
+//Config holds the config used to start the whole server
 var Config Configuration
 
 func init() {
@@ -39,21 +44,22 @@ func load() {
 	}
 }
 
-func danger(args ...interface{}) {
+//Danger outputs and prints a danger errLog.
+func Danger(args ...interface{}) {
 	outputLogger.SetPrefix("DANGER ")
 	outputLogger.Println(args...)
 }
 
-func warning(args ...interface{}) {
+func Warning(args ...interface{}) {
 	outputLogger.SetPrefix("WARNING ")
 	outputLogger.Println(args...)
 }
 
-func error(args ...interface{}) {
+func Error(args ...interface{}) {
 	outputLogger.SetPrefix("ERROR ")
-	outputLogger.Println(args...)
+	outputLogger.Fatalln(args...)
 }
 
-func info(args ...interface{}) {
+func Info(args ...interface{}) {
 	outputLogger.Println(args...)
 }
