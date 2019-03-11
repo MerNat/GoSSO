@@ -3,17 +3,20 @@ package data
 import (
 	misc "Misc"
 	"crypto/rand"
-	"crypto/sha1"
 	"database/sql"
 	"fmt"
+	_ "github.com/lib/pq"
+	"golang.org/x/crypto/bcrypt"
 )
 
+//Db has a connection to db
 var Db *sql.DB
 
 func init() {
+	var err error
 	varSettings := "dbname=" + misc.Config.DbName + " user=" + misc.Config.DbUser + " port=" + misc.Config.DbPort +
 		" host=" + misc.Config.DbAddress + " password=" + misc.Config.DbPassword
-	Db, err := sql.Open("postgres", varSettings)
+	Db, err = sql.Open("postgres", varSettings)
 
 	if err != nil {
 		misc.Error("Can not connect to DB", err)
@@ -35,6 +38,8 @@ func createUUID() (uuid string) {
 
 // Encrypt encypts a string with sha1 algorithm
 func Encrypt(plaintext string) (cryptedtext string) {
-	cryptedtext = fmt.Sprintf("%x", sha1.Sum([]byte(plaintext)))
+	// cryptedtext = fmt.Sprintf("%x", sha1.Sum([]byte(plaintext)))
+	hashPassword, _ := bcrypt.GenerateFromPassword([]byte(plaintext), bcrypt.DefaultCost)
+	cryptedtext = string(hashPassword)
 	return
 }

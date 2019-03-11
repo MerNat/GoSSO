@@ -1,9 +1,14 @@
 package auth
 
 import (
+	misc "Misc"
+	"context"
+	"data"
 	"handlers"
 	"net/http"
 	"strings"
+
+	"github.com/dgrijalva/jwt-go"
 )
 
 // JwtAuth is a global JWT-Authenticator
@@ -14,6 +19,7 @@ var JwtAuth = func(next http.Handler) http.Handler {
 
 		for _, value := range rejectURL {
 			if value == currentPath {
+				w.Header().Add("Content-Type", "application/json")
 				next.ServeHTTP(w, r)
 				return
 			}
@@ -38,7 +44,29 @@ var JwtAuth = func(next http.Handler) http.Handler {
 		}
 
 		theToken := splitted[1]
-		
 
+		tk := &data.Token{}
+
+		token, err := jwt.ParseWithClaims(theToken, tk, func(token *jwt.Token) (interface{}, error) {
+			return []byte(misc.Config.JwtSecret), nil
+		})
+
+		if err != nil {
+			response = handlers.Message(false, "Malformed auth token")
+			w.WriteHeader(http.StatusForbidden)
+			handlers.Respond(w, response)
+			return
+		}
+
+		if !token.Valid {
+			response = handlers.Message(false, "Token is not valid or expired")
+			w.WriteHeader(http.StatusForbidden)
+			handlers.Respond(w, response)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), "user", tk.Uuid)
+		r = r.WithContext(ctx)
+		next.ServeHTTP(w, r)
 	})
 }

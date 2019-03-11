@@ -8,13 +8,15 @@ import (
 
 //Configuration holds the struct to the config
 type Configuration struct {
-	ServerAddress string
-	ServerPort    string
-	DbAddress     string
-	DbPort        string
-	DbUser        string
-	DbName        string
-	DbPassword    string
+	ServerAddress      string
+	ServerReadTimeout  int64
+	ServerWriteTimeout int64
+	DbAddress          string
+	DbPort             string
+	DbUser             string
+	DbName             string
+	DbPassword         string
+	JwtSecret          string
 }
 
 var outputLogger *log.Logger
@@ -23,13 +25,13 @@ var outputLogger *log.Logger
 var Config Configuration
 
 func init() {
-	file, err := os.OpenFile("sso.log", os.O_CREATE|os.O_APPEND, 0666)
+	// file, err := os.OpenFile("sso.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 
-	if err != nil {
-		log.Fatalln("Can Access sso.log file", err)
-	}
-
-	outputLogger = log.New(file, "INFO ", log.Ldate|log.Ltime|log.Lshortfile)
+	// if err != nil {
+	// 	log.Fatalln("Can Access sso.log file", err)
+	// }
+	load()
+	outputLogger = log.New(os.Stdout, "INFO ", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
 func load() {
@@ -50,16 +52,20 @@ func Danger(args ...interface{}) {
 	outputLogger.Println(args...)
 }
 
+//Warning warns
 func Warning(args ...interface{}) {
 	outputLogger.SetPrefix("WARNING ")
 	outputLogger.Println(args...)
 }
 
+//Error prints the message and terminate
 func Error(args ...interface{}) {
 	outputLogger.SetPrefix("ERROR ")
 	outputLogger.Fatalln(args...)
 }
 
+//Info prints inf
 func Info(args ...interface{}) {
+	outputLogger.SetPrefix("INFO ")
 	outputLogger.Println(args...)
 }
