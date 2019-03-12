@@ -16,10 +16,9 @@ var JwtAuth = func(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rejectURL := []string{"/sso/register", "/sso/login"}
 		currentPath := r.URL.Path
-
+		w.Header().Add("Content-Type", "application/json")
 		for _, value := range rejectURL {
 			if value == currentPath {
-				w.Header().Add("Content-Type", "application/json")
 				next.ServeHTTP(w, r)
 				return
 			}
@@ -53,7 +52,7 @@ var JwtAuth = func(next http.Handler) http.Handler {
 
 		if err != nil {
 			response = handlers.Message(false, "Malformed auth token")
-			w.WriteHeader(http.StatusForbidden)
+			w.WriteHeader(http.StatusBadRequest)
 			handlers.Respond(w, response)
 			return
 		}
@@ -65,7 +64,7 @@ var JwtAuth = func(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "user", tk.Uuid)
+		ctx := context.WithValue(r.Context(), "user", tk.UserId)
 		r = r.WithContext(ctx)
 		next.ServeHTTP(w, r)
 	})

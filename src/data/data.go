@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"database/sql"
 	"fmt"
+
 	_ "github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 )

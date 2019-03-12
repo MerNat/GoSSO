@@ -14,6 +14,7 @@ func main() {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/sso/register", handlers.CreateUser).Methods("POST")
+	router.HandleFunc("/sso/login", handlers.Login).Methods("POST")
 
 	router.Use(auth.JwtAuth)
 

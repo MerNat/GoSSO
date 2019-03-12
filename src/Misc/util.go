@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+
+	"github.com/dgrijalva/jwt-go"
 )
 
 //Configuration holds the struct to the config
@@ -17,12 +19,17 @@ type Configuration struct {
 	DbName             string
 	DbPassword         string
 	JwtSecret          string
+	JwtExpires         int64
+	JwtIssuer          string
 }
 
 var outputLogger *log.Logger
 
 //Config holds the config used to start the whole server
 var Config Configuration
+
+// StandardClaim holds JwtClaim
+var StandardClaim jwt.StandardClaims
 
 func init() {
 	// file, err := os.OpenFile("sso.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
@@ -43,6 +50,10 @@ func load() {
 
 	if err != nil {
 		log.Fatalln("Can not decode config file", err)
+	}
+	StandardClaim = jwt.StandardClaims{
+		ExpiresAt: Config.JwtExpires,
+		Issuer:    Config.JwtIssuer,
 	}
 }
 

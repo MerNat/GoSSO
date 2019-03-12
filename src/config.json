@@ -7,5 +7,7 @@
     "DbUser":   "sso",
     "DbName":   "sso",
     "DbPassword":   "password",
-    "JwtSecret": "JwtSecretHere"
+    "JwtSecret": "JwtSecretHere",
+    "JwtExpires":   15000,
+    "JwtIssuer":    "GoSso" 
 }
