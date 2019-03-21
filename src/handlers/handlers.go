@@ -1,12 +1,12 @@
 package handlers
 
 import (
-	misc "Misc"
-	"data"
 	"encoding/json"
 	"fmt"
 	"net/http"
 
+	misc "github.com/MerNat/GoSSO/src/Misc"
+	"github.com/MerNat/GoSSO/src/data"
 	"github.com/dgrijalva/jwt-go"
 )
 

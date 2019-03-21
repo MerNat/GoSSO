@@ -1,12 +1,13 @@
 package auth
 
 import (
-	misc "Misc"
 	"context"
-	"data"
-	"handlers"
 	"net/http"
 	"strings"
+
+	misc "github.com/MerNat/GoSSO/src/Misc"
+	"github.com/MerNat/GoSSO/src/data"
+	"github.com/MerNat/GoSSO/src/handlers"
 
 	"github.com/dgrijalva/jwt-go"
 )

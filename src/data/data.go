@@ -1,11 +1,11 @@
 package data
 
 import (
-	misc "Misc"
 	"crypto/rand"
 	"database/sql"
 	"fmt"
 
+	misc "github.com/MerNat/GoSSO/src/Misc"
 	_ "github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 )

@@ -1,12 +1,13 @@
 package main
 
 import (
-	misc "Misc"
-	"auth"
-	"handlers"
+	"log"
 	"net/http"
 	"time"
 
+	misc "github.com/MerNat/GoSSO/src/Misc"
+	"github.com/MerNat/GoSSO/src/auth"
+	"github.com/MerNat/GoSSO/src/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -26,5 +27,5 @@ func main() {
 		MaxHeaderBytes: 1 << 20,
 	}
 	misc.Info("Server Started: ", misc.Config.ServerAddress)
-	server.ListenAndServe()
+	log.Fatal(server.ListenAndServe())
 }
