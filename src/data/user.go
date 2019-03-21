@@ -13,7 +13,6 @@ import (
 type Token struct {
 	UserId uint32
 	jwt.StandardClaims
-	UserToken string
 }
 
 //User represents the User struct
@@ -26,7 +25,7 @@ type User struct {
 }
 
 //Users has logged users
-var Users []map[uint32]string
+var Users []string
 
 //Register registers a user to the system
 func (user *User) Register() (response map[string]interface{}, err error) {

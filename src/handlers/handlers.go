@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	misc "github.com/MerNat/GoSSO/src/Misc"
@@ -48,7 +47,7 @@ func Login(w http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	valid, err := user.LoginUser(user.Email, user.Password)
+	_, err = user.LoginUser(user.Email, user.Password)
 
 	if err != nil {
 		response := Message(false, err.Error())
@@ -62,8 +61,7 @@ func Login(w http.ResponseWriter, request *http.Request) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, tk)
 	tokenString, _ := token.SignedString([]byte(misc.Config.JwtSecret))
 	//before appending check if user exists in map
-	data.Users = append(data.Users, map[uint32]string{user.ID: tokenString})
-	fmt.Println(data.Users)
-
-	fmt.Println("valid", valid)
+	data.Users = append(data.Users, tokenString)
+	w.WriteHeader(http.StatusOK)
+	Respond(w, map[string]interface{}{"token": tokenString})
 }
