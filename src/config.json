@@ -1,0 +1,13 @@
+{
+    "ServerAddress": "localhost:8080",
+    "ServerReadTimeout": 10,
+    "ServerWriteTimeout": 600,
+    "DbAddress": "localhost",
+    "DbPort":   "5432",
+    "DbUser":   "sso",
+    "DbName":   "sso",
+    "DbPassword":   "password",
+    "JwtSecret": "JwtSecretHere",
+    "JwtExpires":   15000,
+    "JwtIssuer":    "GoSso" 
+}
