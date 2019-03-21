@@ -18,6 +18,7 @@ func main() {
 	router.HandleFunc("/sso/login", handlers.Login).Methods("POST")
 
 	router.Use(auth.JwtAuth)
+	router.Use(handlers.IsAuthorized)
 
 	server := &http.Server{
 		Addr:           misc.Config.ServerAddress,

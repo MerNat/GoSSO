@@ -2,18 +2,26 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+
+	"github.com/gorilla/mux"
 
 	misc "github.com/MerNat/GoSSO/src/Misc"
 	"github.com/MerNat/GoSSO/src/data"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/mitchellh/mapstructure"
+)
+
+var (
+	user        = &data.User{}
+	tokenString = token.SignedString([]byte(misc.Config.JwtSecret))
+	tk          = &data.Token{UserId: user.ID}
+	token       = jwt.NewWithClaims(jwt.SigningMethodHS256, tk)
 )
 
 //CreateUser registers a user
 func CreateUser(w http.ResponseWriter, request *http.Request) {
-
-	user := &data.User{}
-
 	err := json.NewDecoder(request.Body).Decode(user)
 
 	if err != nil {
@@ -55,13 +63,42 @@ func Login(w http.ResponseWriter, request *http.Request) {
 		Respond(w, response)
 		return
 	}
-	tk := &data.Token{UserId: user.ID}
 	tk.ExpiresAt = misc.Config.JwtExpires
 	tk.Issuer = misc.Config.JwtIssuer
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, tk)
-	tokenString, _ := token.SignedString([]byte(misc.Config.JwtSecret))
 	//before appending check if user exists in map
 	data.Users = append(data.Users, tokenString)
 	w.WriteHeader(http.StatusOK)
 	Respond(w, map[string]interface{}{"token": tokenString})
+}
+
+// IsAuthorized middleware for verifying token
+func IsAuthorized(ep func(http.ResponseWriter, *http.Request)) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header["token"] != nil {
+			token, err := jwt.Parse(r.Header["token"][0], func(tk *jwt.Token) (interface{}, error) {
+				if _, ok := tk.Method.(*jwt.SigningMethodHMAC); !ok {
+					return nil, fmt.Errorf("something wrong happened")
+				}
+				return tokenString, nil
+			})
+
+			if err != nil {
+				fmt.Fprintf(w, err.Error())
+			}
+
+			if token.Valid {
+				var user data.User
+				mapstructure.Decode(token.Claims, &user)
+				vars := mux.Vars(r)
+				email := vars["email"]
+				if email != user.Email {
+					Respond(w, map[string]interface{}{"Error": "Invalid authorization token - Does not match user email"})
+					return
+				}
+				ep(w, r)
+			}
+		} else {
+			fmt.Fprintf(w, "Not Authorized")
+		}
+	})
 }
