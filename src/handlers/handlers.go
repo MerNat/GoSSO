@@ -61,7 +61,14 @@ func Login(w http.ResponseWriter, request *http.Request) {
 	tk.Issuer = misc.Config.JwtIssuer
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, tk)
 	tokenString, _ := token.SignedString([]byte(misc.Config.JwtSecret))
-	//before appending check if user exists in map
+	//before appending check if user exists in slice
+	sort.Strings(data.Users)
+	i := sort.SearchStrings(data.Users, tokenString)
+	if i > 0 || i < len(data.Users) {
+		w.WriteHeader(http.StatusOK)
+		Respond(w, map[string]interface{}{"token": tokenString})
+		return
+	}
 	data.Users = append(data.Users, tokenString)
 	w.WriteHeader(http.StatusOK)
 	Respond(w, map[string]interface{}{"token": tokenString})
@@ -100,7 +107,7 @@ func IsAuthorized(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		fmt.Println(err.Error())
+		data.Users = append(data.Users[:i], data.Users[i+1:]...)
 		response := Message(false, "Malformed auth token")
 		w.WriteHeader(http.StatusBadRequest)
 		Respond(w, response)
