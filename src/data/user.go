@@ -15,6 +15,11 @@ type Token struct {
 	jwt.StandardClaims
 }
 
+//Verify represents the incoming token
+type Verify struct {
+	Token string `json:"token"`
+}
+
 //User represents the User struct
 type User struct {
 	ID        uint32    `json:"id"`

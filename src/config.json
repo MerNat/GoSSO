@@ -8,6 +8,6 @@
     "DbName":   "sso",
     "DbPassword":   "password",
     "JwtSecret": "JwtSecretHere",
-    "JwtExpires":   15000,
+    "JwtExpires":   1,
     "JwtIssuer":    "GoSso" 
 }

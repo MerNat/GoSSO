@@ -4,24 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-
-	"github.com/gorilla/mux"
+	"sort"
+	"time"
 
 	misc "github.com/MerNat/GoSSO/src/Misc"
 	"github.com/MerNat/GoSSO/src/data"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/mitchellh/mapstructure"
-)
-
-var (
-	user        = &data.User{}
-	tokenString = token.SignedString([]byte(misc.Config.JwtSecret))
-	tk          = &data.Token{UserId: user.ID}
-	token       = jwt.NewWithClaims(jwt.SigningMethodHS256, tk)
 )
 
 //CreateUser registers a user
 func CreateUser(w http.ResponseWriter, request *http.Request) {
+	user := &data.User{}
 	err := json.NewDecoder(request.Body).Decode(user)
 
 	if err != nil {
@@ -63,8 +56,11 @@ func Login(w http.ResponseWriter, request *http.Request) {
 		Respond(w, response)
 		return
 	}
-	tk.ExpiresAt = misc.Config.JwtExpires
+	tk := &data.Token{UserId: user.ID}
+	tk.ExpiresAt = time.Now().Add(time.Hour * time.Duration(misc.Config.JwtExpires)).Unix()
 	tk.Issuer = misc.Config.JwtIssuer
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, tk)
+	tokenString, _ := token.SignedString([]byte(misc.Config.JwtSecret))
 	//before appending check if user exists in map
 	data.Users = append(data.Users, tokenString)
 	w.WriteHeader(http.StatusOK)
@@ -72,33 +68,47 @@ func Login(w http.ResponseWriter, request *http.Request) {
 }
 
 // IsAuthorized middleware for verifying token
-func IsAuthorized(ep func(http.ResponseWriter, *http.Request)) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header["token"] != nil {
-			token, err := jwt.Parse(r.Header["token"][0], func(tk *jwt.Token) (interface{}, error) {
-				if _, ok := tk.Method.(*jwt.SigningMethodHMAC); !ok {
-					return nil, fmt.Errorf("something wrong happened")
-				}
-				return tokenString, nil
-			})
+func IsAuthorized(w http.ResponseWriter, r *http.Request) {
+	tk := data.Verify{}
+	err := json.NewDecoder(r.Body).Decode(&tk)
+	if err != nil {
+		fmt.Print(err.Error())
+		response := Message(false, "Cant parse incomming data")
+		w.WriteHeader(http.StatusBadRequest)
+		Respond(w, response)
+		return
+	}
 
-			if err != nil {
-				fmt.Fprintf(w, err.Error())
-			}
+	if tk.Token == "" {
+		response := Message(false, "wrong data format")
+		w.WriteHeader(http.StatusBadRequest)
+		Respond(w, response)
+		return
+	}
 
-			if token.Valid {
-				var user data.User
-				mapstructure.Decode(token.Claims, &user)
-				vars := mux.Vars(r)
-				email := vars["email"]
-				if email != user.Email {
-					Respond(w, map[string]interface{}{"Error": "Invalid authorization token - Does not match user email"})
-					return
-				}
-				ep(w, r)
-			}
-		} else {
-			fmt.Fprintf(w, "Not Authorized")
-		}
+	sort.Strings(data.Users)
+	i := sort.SearchStrings(data.Users, tk.Token)
+	if i >= len(data.Users) || i < 0 {
+		response := Message(false, "User not logged in")
+		w.WriteHeader(http.StatusBadRequest)
+		Respond(w, response)
+		return
+	}
+
+	token, err := jwt.Parse(tk.Token, func(token *jwt.Token) (interface{}, error) {
+		return []byte(misc.Config.JwtSecret), nil
 	})
+
+	if err != nil {
+		fmt.Println(err.Error())
+		response := Message(false, "Malformed auth token")
+		w.WriteHeader(http.StatusBadRequest)
+		Respond(w, response)
+		return
+	}
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		w.WriteHeader(http.StatusOK)
+		Respond(w, map[string]interface{}{"data": claims["UserId"]})
+		return
+	}
 }
