@@ -7,8 +7,8 @@ import (
 	"sort"
 	"time"
 
-	misc "github.com/MerNat/GoSSO/src/Misc"
-	"github.com/MerNat/GoSSO/src/data"
+	misc "github.com/MerNat/GoSSO/Misc"
+	"github.com/MerNat/GoSSO/data"
 	"github.com/dgrijalva/jwt-go"
 )
 
@@ -56,7 +56,7 @@ func Login(w http.ResponseWriter, request *http.Request) {
 		Respond(w, response)
 		return
 	}
-	tk := &data.Token{UserId: user.ID}
+	tk := &data.Token{UserId: user.ID, FirstName: user.FirstName}
 	tk.ExpiresAt = time.Now().Add(time.Hour * time.Duration(misc.Config.JwtExpires)).Unix()
 	tk.Issuer = misc.Config.JwtIssuer
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, tk)
@@ -64,9 +64,9 @@ func Login(w http.ResponseWriter, request *http.Request) {
 	//before appending check if user exists in slice
 	sort.Strings(data.Users)
 	i := sort.SearchStrings(data.Users, tokenString)
-	if i > 0 || i < len(data.Users) {
+	if i > 0 && i < len(data.Users) {
 		w.WriteHeader(http.StatusOK)
-		Respond(w, map[string]interface{}{"token": tokenString})
+		Respond(w, map[string]interface{}{"token": data.Users[i]})
 		return
 	}
 	data.Users = append(data.Users, tokenString)
@@ -96,6 +96,7 @@ func IsAuthorized(w http.ResponseWriter, r *http.Request) {
 	sort.Strings(data.Users)
 	i := sort.SearchStrings(data.Users, tk.Token)
 	if i >= len(data.Users) || i < 0 {
+		fmt.Println(i)
 		response := Message(false, "User not logged in")
 		w.WriteHeader(http.StatusBadRequest)
 		Respond(w, response)
@@ -115,7 +116,7 @@ func IsAuthorized(w http.ResponseWriter, r *http.Request) {
 	}
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		w.WriteHeader(http.StatusOK)
-		Respond(w, map[string]interface{}{"data": claims["UserId"]})
+		Respond(w, map[string]interface{}{"userId": claims["UserId"], "userName": claims["FirstName"]})
 		return
 	}
 }

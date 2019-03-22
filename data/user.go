@@ -11,7 +11,8 @@ import (
 
 //Token represents the token struct
 type Token struct {
-	UserId uint32
+	UserId    uint32
+	FirstName string
 	jwt.StandardClaims
 }
 
@@ -24,6 +25,7 @@ type Verify struct {
 type User struct {
 	ID        uint32    `json:"id"`
 	UUID      string    `json:"-"`
+	FirstName string    `json:"firstname"`
 	Email     string    `json:"email"`
 	Password  string    `json:"password"`
 	CreatedAt time.Time `json:"createdAt"`
@@ -39,7 +41,7 @@ func (user *User) Register() (response map[string]interface{}, err error) {
 		err = errors.New("User already exists")
 		return
 	}
-	query := "insert into users (uuid, email, password, created_at) values ($1, $2, $3, $4) returning id, uuid, created_at"
+	query := "insert into users (uuid, email, password, created_at, firstname) values ($1, $2, $3, $4, $5) returning id, uuid, created_at, firstname"
 	stmt, err := Db.Prepare(query)
 
 	if err != nil {
@@ -48,9 +50,9 @@ func (user *User) Register() (response map[string]interface{}, err error) {
 
 	defer stmt.Close()
 
-	err = stmt.QueryRow(createUUID(), user.Email, Encrypt(user.Password), time.Now()).Scan(&user.ID, &user.UUID, &user.CreatedAt)
+	err = stmt.QueryRow(createUUID(), user.Email, Encrypt(user.Password), time.Now(), user.FirstName).Scan(&user.ID, &user.UUID, &user.CreatedAt, &user.FirstName)
 
-	response = map[string]interface{}{"id": user.ID, "uuid": user.UUID, "createdAt": user.CreatedAt, "email": user.Email}
+	response = map[string]interface{}{"id": user.ID, "uuid": user.UUID, "createdAt": user.CreatedAt, "email": user.Email, "firstname": user.FirstName}
 	return
 }
 
@@ -69,7 +71,7 @@ func (user *User) IsUser() (available bool) {
 
 // LoginUser tries to login and returns if it's valid
 func (user *User) LoginUser(email string, password string) (valid bool, err error) {
-	err = Db.QueryRow("select id, password, uuid, created_at from users where email=$1", email).Scan(&user.ID, &user.Password, &user.UUID, &user.CreatedAt)
+	err = Db.QueryRow("select id, password, uuid, created_at, firstname from users where email=$1", email).Scan(&user.ID, &user.Password, &user.UUID, &user.CreatedAt, &user.FirstName)
 	if err != nil {
 		err = errors.New("Email Not Found")
 		return

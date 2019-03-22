@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	misc "github.com/MerNat/GoSSO/src/Misc"
-	"github.com/MerNat/GoSSO/src/auth"
-	"github.com/MerNat/GoSSO/src/handlers"
+	misc "github.com/MerNat/GoSSO/Misc"
+	"github.com/MerNat/GoSSO/auth"
+	"github.com/MerNat/GoSSO/handlers"
 	"github.com/gorilla/mux"
 )
 

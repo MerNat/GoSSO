@@ -1,5 +1,5 @@
 {
-    "ServerAddress": "localhost:8080",
+    "ServerAddress": "0.0.0.0:8080",
     "ServerReadTimeout": 10,
     "ServerWriteTimeout": 600,
     "DbAddress": "localhost",

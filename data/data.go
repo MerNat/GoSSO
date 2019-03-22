@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	misc "github.com/MerNat/GoSSO/src/Misc"
+	misc "github.com/MerNat/GoSSO/Misc"
 	_ "github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 )
