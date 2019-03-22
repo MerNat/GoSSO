@@ -16,6 +16,7 @@ func main() {
 
 	router.HandleFunc("/sso/register", handlers.CreateUser).Methods("POST")
 	router.HandleFunc("/sso/login", handlers.Login).Methods("POST")
+	router.HandleFunc("/sso/verify", handlers.IsAuthorized).Methods("POST")
 
 	router.Use(auth.JwtAuth)
 

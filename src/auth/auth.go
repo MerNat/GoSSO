@@ -15,7 +15,7 @@ import (
 // JwtAuth is a global JWT-Authenticator
 var JwtAuth = func(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		rejectURL := []string{"/sso/register", "/sso/login"}
+		rejectURL := []string{"/sso/register", "/sso/login", "/sso/verify"}
 		currentPath := r.URL.Path
 		w.Header().Add("Content-Type", "application/json")
 		for _, value := range rejectURL {
