@@ -1,2 +1,3 @@
 # SSO Implementaion In GOLang
-    Feature
+    Building for Docker Image:
+        `docker build -t xxxx/gosso .`
