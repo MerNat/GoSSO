@@ -4,7 +4,7 @@
     "ServerWriteTimeout": 600,
     "DbAddress": "postgres",
     "DbPort":   "5432",
-    "DbUser":   "sso",
+    "DbUser":   "postgres",
     "DbName":   "sso",
     "DbPassword":   "password",
     "JwtSecret": "JwtSecretHere",

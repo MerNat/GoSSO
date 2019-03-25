@@ -9,9 +9,21 @@ services:
       - postgres
   
   postgres:
-    image: mernat/sso-postgres
+    image: postgres:alpine
+    volumes:
+      - ./db_data:/var/lib/postgresql/data
     ports:
       - '5432:5432'
     environment:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: sso
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8081:8080
+    links:
+      - postgres:postgres
+    depends_on:
+      - postgres

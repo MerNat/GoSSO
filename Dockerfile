@@ -22,3 +22,5 @@ COPY --from=base_alpine /final /mySSO
 EXPOSE 8080
 
 ENTRYPOINT ./GoSSO
+
+#sudo chown 1001:1001 -R ./db_data/
