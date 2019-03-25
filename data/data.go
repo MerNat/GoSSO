@@ -16,7 +16,7 @@ var Db *sql.DB
 func init() {
 	var err error
 	varSettings := "dbname=" + misc.Config.DbName + " user=" + misc.Config.DbUser + " port=" + misc.Config.DbPort +
-		" host=" + misc.Config.DbAddress + " password=" + misc.Config.DbPassword
+		" host=" + misc.Config.DbAddress + " password=" + misc.Config.DbPassword + " sslmode=disable"
 	Db, err = sql.Open("postgres", varSettings)
 
 	if err != nil {
