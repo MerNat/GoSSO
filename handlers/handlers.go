@@ -12,19 +12,12 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
+var user data.User
+
 //CreateUser registers a user
 func CreateUser(w http.ResponseWriter, request *http.Request) {
-	user := &data.User{}
-	err := json.NewDecoder(request.Body).Decode(user)
-
-	if err != nil {
-		misc.Warning("Can not parse request", err)
-		w.WriteHeader(http.StatusBadRequest)
-		Respond(w, Message(false, "Cannot parse request"))
-		return
-	}
-
-	respond, err := user.Register()
+	json.NewDecoder(request.Body).Decode(&user)
+	_, err := user.Register()
 
 	if err != nil {
 		misc.Warning(err)
@@ -32,14 +25,12 @@ func CreateUser(w http.ResponseWriter, request *http.Request) {
 		Respond(w, Message(false, err.Error()))
 		return
 	}
-	w.WriteHeader(http.StatusCreated)
-	Respond(w, respond)
+	json.NewEncoder(w).Encode(&user)
 }
 
 //Login logs and generate a token
 func Login(w http.ResponseWriter, request *http.Request) {
-	user := &data.User{}
-	err := json.NewDecoder(request.Body).Decode(user)
+	err := json.NewDecoder(request.Body).Decode(&user)
 
 	if err != nil {
 		response := Message(false, "Cant parse incomming data")

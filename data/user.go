@@ -25,7 +25,7 @@ type Verify struct {
 type User struct {
 	ID        uint32    `json:"id"`
 	UUID      string    `json:"-"`
-	FirstName string    `json:"firstname"`
+	FirstName string    `gorm:"column:firstname"`
 	Email     string    `json:"email"`
 	Password  string    `json:"password"`
 	CreatedAt time.Time `json:"createdAt"`
@@ -41,8 +41,13 @@ func (user *User) Register() (response map[string]interface{}, err error) {
 		err = errors.New("User already exists")
 		return
 	}
-	query := "insert into users (uuid, email, password, created_at, firstname) values ($1, $2, $3, $4, $5) returning id, uuid, created_at, firstname"
-	stmt, err := Db.Prepare(query)
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	stmt := Db.Create(
+		&User{
+			UUID:      createUUID(),
+			FirstName: user.FirstName,
+			Email:     user.Email,
+			Password:  string(passwordHash)})
 
 	if err != nil {
 		return
@@ -50,16 +55,15 @@ func (user *User) Register() (response map[string]interface{}, err error) {
 
 	defer stmt.Close()
 
-	err = stmt.QueryRow(createUUID(), user.Email, Encrypt(user.Password), time.Now(), user.FirstName).Scan(&user.ID, &user.UUID, &user.CreatedAt, &user.FirstName)
 
 	response = map[string]interface{}{"id": user.ID, "uuid": user.UUID, "createdAt": user.CreatedAt, "email": user.Email, "firstname": user.FirstName}
-	return
+	return response, nil
 }
 
 //IsUser checks whether a use is already registered or not.
 func (user *User) IsUser() (available bool) {
 	var num int
-	Db.QueryRow("select COUNT(*) from users where email=$1 limit 1", user.Email).Scan(&num)
+	Db.Where("email = ?", user.Email).Find(&user).Count(&num)
 
 	if num == 0 {
 		available = false
@@ -71,15 +75,14 @@ func (user *User) IsUser() (available bool) {
 
 // LoginUser tries to login and returns if it's valid
 func (user *User) LoginUser(email string, password string) (valid bool, err error) {
-	err = Db.QueryRow("select id, password, uuid, created_at, firstname from users where email=$1", email).Scan(&user.ID, &user.Password, &user.UUID, &user.CreatedAt, &user.FirstName)
+	err = Db.Where("email = ?", email).First(&user).Error
 	if err != nil {
-		err = errors.New("Email Not Found")
-		return
+		return false, err
 	}
+	// fmt.Println(password, user.Password)
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
-		err = errors.New("Invalid credentials")
-		return
+		return false, err
 	}
 
 	valid = true
