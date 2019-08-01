@@ -63,7 +63,11 @@ func (user *User) Register() (response map[string]interface{}, err error) {
 //IsUser checks whether a use is already registered or not.
 func (user *User) IsUser() (available bool) {
 	var num int
-	Db.Where("email = ?", user.Email).Find(&user).Count(&num)
+	err := Db.Where("email = ?", user.Email).Find(&user).Count(&num).Error
+
+	if err != nil {
+		return false
+	}
 
 	if num == 0 {
 		available = false
