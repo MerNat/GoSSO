@@ -42,28 +42,33 @@ func (user *User) Register() (response map[string]interface{}, err error) {
 		return
 	}
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
-	stmt := Db.Create(
+
+	if err != nil {
+		return
+	}
+
+	stmt := Db.Table("users").Create(
 		&User{
 			UUID:      createUUID(),
 			FirstName: user.FirstName,
 			Email:     user.Email,
 			Password:  string(passwordHash)})
 
-	if err != nil {
+	if stmt.Error != nil {
+		err = stmt.Error
 		return
 	}
 
 	defer stmt.Close()
 
-
-	response = map[string]interface{}{"id": user.ID, "uuid": user.UUID, "createdAt": user.CreatedAt, "email": user.Email, "firstname": user.FirstName}
+	response = map[string]interface{}{"uuid": user.UUID, "createdAt": user.CreatedAt, "email": user.Email, "firstname": user.FirstName}
 	return response, nil
 }
 
 //IsUser checks whether a use is already registered or not.
 func (user *User) IsUser() (available bool) {
 	var num int
-	err := Db.Where("email = ?", user.Email).Find(&user).Count(&num).Error
+	err := Db.Table("users").Where("email = ?", user.Email).Count(&num).Error
 
 	if err != nil {
 		return false

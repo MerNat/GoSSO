@@ -3,13 +3,13 @@ package data
 import (
 	"crypto/rand"
 	// "database/sql"
-	"github.com/jinzhu/gorm"
 	"fmt"
+
+	"github.com/jinzhu/gorm"
 
 	misc "github.com/MerNat/GoSSO/Misc"
 	_ "github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
-	"os"
 )
 
 //Db has a connection to db
@@ -17,9 +17,7 @@ var Db *gorm.DB
 
 func init() {
 	var err error
-	Db, err = gorm.Open(
-		"postgres", 
-		os.ExpandEnv("host=${HOST} user=${USER} dbname=${DBNAME} sslmode=disable password=${PASSWORD}"))
+	Db, err = gorm.Open("postgres", "host="+misc.Config.DbAddress+" user="+misc.Config.DbUser+" dbname="+misc.Config.DbName+" sslmode=disable password="+misc.Config.DbPassword)
 
 	if err != nil {
 		misc.Error("Can not connect to DB", err)
